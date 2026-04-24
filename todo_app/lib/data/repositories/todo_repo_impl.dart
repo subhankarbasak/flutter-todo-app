@@ -31,6 +31,7 @@ class TodoRepositoryImpl implements TodoRepository {
       id: todo.id,
       title: todo.title,
       description: todo.description,
+      category: todo.category, // Ensure this line exists
       isCompleted: todo.isCompleted,
       createdAt: todo.createdAt,
     ).toMap());
@@ -43,6 +44,7 @@ class TodoRepositoryImpl implements TodoRepository {
       id: todo.id,
       title: todo.title,
       description: todo.description,
+      category: todo.category, // Ensure this line exists
       isCompleted: todo.isCompleted,
       createdAt: todo.createdAt,
     ).toMap());

@@ -10,37 +10,98 @@ final todoRepositoryProvider = Provider<TodoRepository>((ref) {
   return TodoRepositoryImpl();
 });
 
-// 2. State Notifier (Controller)
+// 2. Sort Options Enum
+enum SortOption { dateAsc, dateDesc, nameAsc, status }
+
+// 3. State Notifier (Controller)
 class TodoNotifier extends StateNotifier<AsyncValue<List<Todo>>> {
   final TodoRepository _repository;
+
+  // Search and Sort State
+  String _searchQuery = '';
+  SortOption _sortOption = SortOption.dateDesc;
 
   TodoNotifier(this._repository) : super(const AsyncValue.loading()) {
     loadTodos();
   }
 
+  // Getters for current filters
+  String get searchQuery => _searchQuery;
+  SortOption get sortOption => _sortOption;
+
   Future<void> loadTodos() async {
     state = const AsyncValue.loading();
     try {
       final todos = await _repository.getTodos();
-      state = AsyncValue.data(todos);
+      // Apply Filter and Sort Logic
+      final filtered = _applyFilters(todos);
+      state = AsyncValue.data(filtered);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> addTodo(String title, String description) async {
-    // Optimistic UI could go here, but we'll stick to simple loading
-    final newTodo = Todo(
-      id: const Uuid().v4(),
-      title: title,
-      description: description,
-      isCompleted: false,
-      createdAt: DateTime.now(),
-    );
+  // Logic to filter and sort
+  List<Todo> _applyFilters(List<Todo> todos) {
+    // 1. Filter by Search
+    var result = todos.where((t) {
+      return t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          t.description.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
 
-    await _repository.addTodo(newTodo);
-    await loadTodos(); // Refresh list
+    // 2. Sort
+    switch (_sortOption) {
+      case SortOption.dateAsc:
+        result.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case SortOption.dateDesc:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case SortOption.nameAsc:
+        result.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case SortOption.status:
+        result.sort((a, b) => a.isCompleted.toString().compareTo(b.isCompleted.toString()));
+        break;
+    }
+    return result;
   }
+
+  // Actions
+  Future<void> setSearchQuery(String query) async {
+    _searchQuery = query;
+    // Re-process current data without fetching from DB if possible
+    state.whenData((todos) async {
+      // Fetch raw data again to ensure we filter correctly from source
+      final raw = await _repository.getTodos();
+      state = AsyncValue.data(_applyFilters(raw));
+    });
+  }
+
+  Future<void> setSortOption(SortOption option) async {
+    _sortOption = option;
+    state.whenData((todos) async {
+      final raw = await _repository.getTodos();
+      state = AsyncValue.data(_applyFilters(raw));
+    });
+  }
+
+
+  Future<void> addTodo(Todo todo) async {
+    await _repository.addTodo(todo);
+    await loadTodos();
+  }
+
+  Future<void> updateTodo(Todo todo) async {
+    await _repository.updateTodo(todo);
+    await loadTodos();
+  }
+
+  Future<void> deleteTodo(String id) async {
+    await _repository.deleteTodo(id);
+    await loadTodos();
+  }
+
 
   Future<void> toggleTodo(Todo todo) async {
     final updatedTodo = todo.copyWith(isCompleted: !todo.isCompleted);
@@ -56,12 +117,6 @@ class TodoNotifier extends StateNotifier<AsyncValue<List<Todo>>> {
     });
   }
 
-  Future<void> deleteTodo(String id) async {
-    await _repository.deleteTodo(id);
-    state.whenData((todos) {
-      state = AsyncValue.data(todos.where((t) => t.id != id).toList());
-    });
-  }
 }
 
 // 3. Provider for the UI to consume

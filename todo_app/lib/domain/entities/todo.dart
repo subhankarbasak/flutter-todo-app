@@ -2,6 +2,7 @@ class Todo {
   final String id;
   final String title;
   final String description;
+  final String category; // NEW FIELD
   final bool isCompleted;
   final DateTime createdAt;
 
@@ -9,6 +10,7 @@ class Todo {
     required this.id,
     required this.title,
     required this.description,
+    required this.category, // NEW FIELD
     required this.isCompleted,
     required this.createdAt,
   });
@@ -18,6 +20,7 @@ class Todo {
     String? id,
     String? title,
     String? description,
+    String? category,
     bool? isCompleted,
     DateTime? createdAt,
   }) {
@@ -25,6 +28,7 @@ class Todo {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      category: category ?? this.category,
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
     );

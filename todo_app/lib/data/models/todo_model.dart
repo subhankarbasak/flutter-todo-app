@@ -9,12 +9,14 @@ class TodoModel extends Todo {
     required String id,
     required String title,
     required String description,
+    required String category,
     required bool isCompleted,
     required DateTime createdAt,
   }) : super(
     id: id,
     title: title,
     description: description,
+    category: category,
     isCompleted: isCompleted,
     createdAt: createdAt,
   );
@@ -25,6 +27,7 @@ class TodoModel extends Todo {
       id: map['id'] as String,
       title: map['title'] as String,
       description: map['description'] as String,
+      category: map['category'] as String? ?? 'General', // Default value
       isCompleted: map['isCompleted'] as bool,
       createdAt: DateTime.parse(map['createdAt'] as String),
     );
@@ -36,6 +39,7 @@ class TodoModel extends Todo {
       'id': id,
       'title': title,
       'description': description,
+      'category': category,
       'isCompleted': isCompleted,
       'createdAt': createdAt.toIso8601String(),
     };
