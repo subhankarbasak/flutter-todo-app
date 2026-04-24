@@ -11,7 +11,7 @@ final todoRepositoryProvider = Provider<TodoRepository>((ref) {
 });
 
 // 2. Sort Options Enum
-enum SortOption { dateAsc, dateDesc, nameAsc, status }
+enum SortOption { dateAsc, dateDesc, nameAsc, status, category }
 
 // 3. State Notifier (Controller)
 class TodoNotifier extends StateNotifier<AsyncValue<List<Todo>>> {
@@ -62,6 +62,10 @@ class TodoNotifier extends StateNotifier<AsyncValue<List<Todo>>> {
         break;
       case SortOption.status:
         result.sort((a, b) => a.isCompleted.toString().compareTo(b.isCompleted.toString()));
+        break;
+      // NEW: Sort by Category
+      case SortOption.category:
+        result.sort((a, b) => a.category.toLowerCase().compareTo(b.category.toLowerCase()));
         break;
     }
     return result;

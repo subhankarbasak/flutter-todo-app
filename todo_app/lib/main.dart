@@ -18,7 +18,10 @@ void main() async {
 
   // FIX: Open the box used by the repository
   // The name must match the string used in 'TodoRepositoryImpl'
+  // Open Todo Box
   await Hive.openBox('todosBox');
+  // Open Categories Box
+  await Hive.openBox('categoriesBox');
 
   runApp(
     // ProviderScope is required for Riverpod
